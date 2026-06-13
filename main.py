@@ -1,26 +1,32 @@
 import requests
 
-# 1. Ensure the function receives 'country_name' as an argument
-def get_universities(country_name): 
-    # Now this 'country_name' matches the one in your function definition
-    url = f"http://universities.hipolabs.com/search?country={country_name}"
-    
+def get_crypto_prices():
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {"vs_currency": "usd", "order": "market_cap_desc", "per_page": 5, "page": 1}
     try:
-        response = requests.get(url)
+        response = requests.get(url, params=params)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
+        print(f"Error fetching data: {e}")
         return []
 
 def main():
-    country = input("Enter country name (e.g., India): ")
-    # 2. Pass the 'country' variable into the function here
-    uni_list = get_universities(country) 
-    
-    print(f"\nFound {len(uni_list)} universities:")
-    for uni in uni_list[:10]:
-        print(f"- {uni['name']}")
+    print("--- Live Crypto Price Tracker ---")
+    data = get_crypto_prices()
+    if data:
+        search = input("Enter a coin name to search (or press Enter for top 5): ").lower()
+        print(f"\n{'NAME':<20} | {'PRICE (USD)':<15}")
+        print("-" * 35)
+        found = False
+        for coin in data:
+            if search in coin['name'].lower() or search == "":
+                print(f"{coin['name']:<20} | ${coin['current_price']:,.2f}")
+                found = True
+        if not found:
+            print("Coin not found in top 5.")
+    else:
+        print("No data retrieved.")
 
 if __name__ == "__main__":
     main()
